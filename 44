@@ -1,0 +1,83 @@
+export interface Team {
+  id: string;
+  created_at: string;
+  name: string;
+  points: number;
+}
+
+export interface NewsItem {
+  id: string;
+  created_at: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  category: string;
+  image_url: string;
+  is_featured: boolean;
+  status: 'published' | 'draft';
+  views: number;
+}
+
+export interface GalleryItem {
+    id: string;
+    created_at: string;
+    title: string;
+    description: string;
+    category: string;
+    image_url: string;
+    photographer: string;
+    views: number;
+}
+
+export interface ContactMessage {
+    id: string;
+    created_at: string;
+    name: string;
+    email: string;
+    phone?: string;
+    subject: string;
+    message: string;
+    status: 'unread' | 'read' | 'replied';
+}
+
+export interface AboutContent {
+    id: number;
+    section: 'mission' | 'vision' | 'history';
+    content: string;
+    updated_at: string;
+}
+
+export interface TeamMember {
+    id: string;
+    created_at: string;
+    name: string;
+    position: string;
+    bio: string;
+    image_url: string;
+}
+
+export interface HomepageBackground {
+  id: string;
+  created_at: string;
+  type: 'image' | 'video';
+  url: string;
+  is_active: boolean;
+}
+
+export interface ResultPoster {
+  id: string;
+  created_at: string;
+  competition_name: string;
+  category: string;
+  winner1_name: string;
+  winner1_team?: string | null;
+  winner2_name?: string | null;
+  winner2_team?: string | null;
+  winner3_name?: string | null;
+  winner3_team?: string | null;
+  title_font_size: number;
+  title_color: string;
+  text_alignment: 'left' | 'center' | 'right';
+  background_color: string;
+}

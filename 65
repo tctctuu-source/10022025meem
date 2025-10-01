@@ -1,0 +1,10 @@
+// This file is deprecated and no longer in use.
+// The functionality has been consolidated into src/components/admin/AdminResults.tsx.
+// This file can be safely deleted from your project.
+import React from 'react';
+
+const DeprecatedAdminResultPosters: React.FC = () => {
+  return null;
+};
+
+export default DeprecatedAdminResultPosters;

@@ -1,0 +1,138 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Loader2, Download } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { supabase } from '../lib/supabase';
+import { ResultPoster } from '../types';
+import ResultPosterCard from '../components/ResultPosterCard';
+import PosterDownloadModal from '../components/PosterDownloadModal';
+
+const Results: React.FC = () => {
+  const [posters, setPosters] = useState<ResultPoster[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPoster, setSelectedPoster] = useState<ResultPoster | null>(null);
+
+  useEffect(() => {
+    const fetchPosters = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: queryError } = await supabase
+          .from('result_posters')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (queryError) throw queryError;
+        setPosters(data || []);
+      } catch (err: any) {
+        setError("Could not fetch results. Please ensure your Supabase project is connected and running.");
+        console.error("Error fetching result posters:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosters();
+  }, []);
+
+  const filteredPosters = useMemo(() => {
+    return posters.filter(p =>
+      p.competition_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.winner1_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [posters, searchTerm]);
+  
+  const handleDownloadClick = (poster: ResultPoster) => {
+    setSelectedPoster(poster);
+    setModalOpen(true);
+  };
+
+  return (
+    <div className="py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-4xl font-bold text-ui-text-primary mb-4 font-serif">Competition Results</h1>
+          <p className="text-ui-text-secondary max-w-2xl mx-auto">
+            Browse through the official results from various competitions held at Muhimmath.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-8 relative max-w-lg mx-auto"
+        >
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-ui-text-secondary/50 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by competition, category, or winner..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 border border-black/10 rounded-lg focus:ring-2 focus:ring-brand-light-blue focus:border-transparent bg-ui-surface"
+          />
+        </motion.div>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 text-brand-mid-blue animate-spin" /></div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="bg-rose-100 border border-rose-400 text-rose-700 px-4 py-3 rounded-lg inline-block">
+              <h3 className="font-bold">Connection Error</h3>
+              <p>{error}</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {filteredPosters.length === 0 ? (
+              <div className="text-center py-12 text-ui-text-secondary/80">
+                <h3 className="text-xl font-semibold">No Results Found</h3>
+                <p>Try a different search term or check back later.</p>
+              </div>
+            ) : (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
+                {filteredPosters.map((poster) => (
+                  <motion.div
+                    key={poster.id}
+                    variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                    className="flex flex-col"
+                  >
+                    <div className="flex-grow h-96">
+                      <ResultPosterCard poster={poster} />
+                    </div>
+                    <button
+                      onClick={() => handleDownloadClick(poster)}
+                      className="mt-2 w-full bg-brand-mid-blue text-white py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors hover:bg-brand-dark-blue"
+                    >
+                      <Download size={16} /> Download
+                    </button>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </>
+        )}
+      </div>
+      <PosterDownloadModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        poster={selectedPoster}
+      />
+    </div>
+  );
+};
+
+export default Results;

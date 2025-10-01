@@ -1,0 +1,63 @@
+/*
+# Create Result Posters Table
+This migration creates a new table `result_posters` to store data for dynamically generated result posters. It includes columns for competition details, winner information, and design customization options.
+
+## Query Description:
+- Creates the `result_posters` table.
+- This is a new table, so it does not affect any existing data.
+- It is designed to provide a flexible way to manage and display competition results as visually customizable posters.
+
+## Metadata:
+- Schema-Category: "Structural"
+- Impact-Level: "Low"
+- Requires-Backup: false
+- Reversible: true (by dropping the table)
+
+## Structure Details:
+- Table: `result_posters`
+- Columns: `id`, `created_at`, `competition_name`, `category`, `winner1_name`, `winner1_team`, `winner2_name`, `winner2_team`, `winner3_name`, `winner3_team`, `title_font_size`, `title_color`, `text_alignment`, `background_color`
+
+## Security Implications:
+- RLS Status: Enabled
+- Policy Changes: Yes
+- Auth Requirements: Policies are created to allow public read access and authenticated admin write access.
+
+## Performance Impact:
+- Indexes: Primary key on `id`.
+- Triggers: None.
+- Estimated Impact: Low.
+*/
+
+CREATE TABLE public.result_posters (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    competition_name text NOT NULL,
+    category text NOT NULL,
+    winner1_name text NOT NULL,
+    winner1_team text,
+    winner2_name text,
+    winner2_team text,
+    winner3_name text,
+    winner3_team text,
+    title_font_size integer NOT NULL DEFAULT 32,
+    title_color text NOT NULL DEFAULT '#082026',
+    text_alignment text NOT NULL DEFAULT 'center'::text,
+    background_color text NOT NULL DEFAULT '#FFFFFF'
+);
+
+ALTER TABLE public.result_posters OWNER TO postgres;
+
+ALTER TABLE ONLY public.result_posters
+    ADD CONSTRAINT result_posters_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.result_posters ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access" ON public.result_posters
+    FOR SELECT USING (true);
+
+CREATE POLICY "Allow admin write access" ON public.result_posters
+    FOR ALL USING (auth.role() = 'authenticated');
+
+GRANT ALL ON TABLE public.result_posters TO anon;
+GRANT ALL ON TABLE public.result_posters TO authenticated;
+GRANT ALL ON TABLE public.result_posters TO service_role;

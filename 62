@@ -1,0 +1,39 @@
+-- Create the ENUM type for text alignment
+CREATE TYPE public.text_align_enum AS ENUM (
+    'left',
+    'center',
+    'right'
+);
+
+-- Create the result_posters table
+CREATE TABLE public.result_posters (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    competition_name text NOT NULL,
+    category text NOT NULL,
+    winner1_name text NOT NULL,
+    winner1_team text,
+    winner2_name text,
+    winner2_team text,
+    winner3_name text,
+    winner3_team text,
+    title_font_size integer DEFAULT 24 NOT NULL,
+    title_color text DEFAULT '#082026'::text NOT NULL,
+    text_alignment public.text_align_enum DEFAULT 'center'::public.text_align_enum NOT NULL,
+    background_color text DEFAULT '#FFFFFF'::text NOT NULL
+);
+
+ALTER TABLE public.result_posters OWNER TO postgres;
+
+ALTER TABLE ONLY public.result_posters
+    ADD CONSTRAINT result_posters_pkey PRIMARY KEY (id);
+
+-- Enable RLS
+ALTER TABLE public.result_posters ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for public read access and authenticated admin access
+CREATE POLICY "Public read access for result posters" ON public.result_posters
+    FOR SELECT USING (true);
+
+CREATE POLICY "Admin full access for result posters" ON public.result_posters
+    FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
